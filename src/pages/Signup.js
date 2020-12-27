@@ -1,7 +1,6 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
 import Cookie from 'js-cookie';
-import logo from '../assets/basis-logo.png';
 import { signup, getReferralKey } from '../utils/api';
 import { AppStateContext } from '../context/AppContext';
 import { PrimaryButton } from '../components/Button';
