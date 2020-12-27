@@ -4,6 +4,7 @@ import Cookie from 'js-cookie';
 import logo from '../assets/basis-logo.png';
 import { signup, getReferralKey } from '../utils/api';
 import { AppStateContext } from '../context/AppContext';
+import { PrimaryButton } from '../components/Button';
 
 const Signup = () => {
 	let [state] = useContext(AppStateContext);
@@ -70,89 +71,65 @@ const Signup = () => {
 	};
 
 	return (
-		<div className='wrapper d-flex justify-content-center align-items-center'>
-			<div className='card p-4'>
-				<h1>SIGNUP</h1>
-				<img src={logo} alt='' />
-				<form onSubmit={handleLoginSubmit} className=''>
-					<div className='mb-3'>
-						<label htmlFor='firstName' className='form-label'>
-							First Name
-						</label>
-						<input
-							type='text'
-							className='form-control'
-							id='firstName'
-							placeholder='First Name'
-							onChange={(e) => handleChange(e)}
-							required
-						/>
-					</div>
-					<div className='mb-3'>
-						<label htmlFor='email' className='form-label'>
-							Email address
-						</label>
-						<input
-							type='email'
-							className='form-control'
-							id='email'
-							placeholder='Enter your email'
-							value={state.email}
-							disabled
-						/>
-					</div>
-					<div className='mb-3'>
-						<label htmlFor='referredCodeKey' className='form-label'>
-							Referred code
-						</label>
-						<input
-							type='text'
-							className='form-control'
-							id='referredCodeKey'
-							placeholder='Enter your referrence code'
-							onChange={(e) => handleChange(e)}
-						/>
-					</div>
-					<div className='form-check'>
-						<input
-							className='form-check-input'
-							value={payload.agreeToPrivacyPolicy}
-							id='agreeToPrivacyPolicy'
-							type='checkbox'
-							required
-							onChange={(e) => {
-								setPayload({
-									...payload,
-									agreeToPrivacyPolicy: e.target.checked,
-								});
-							}}
-						/>
-						<label
-							className='form-check-label'
-							htmlFor='agreeToPrivacyPolicy'
-						>
-							I agree to the privacy policy.
-						</label>
-					</div>
-					<p className='mb-0 text-danger'>{error}</p>
-					<div>
-						<button className='btn btn-success' type='submit'>
-							{loading ? (
-								<div
-									className='spinner-border text-light'
-									role='status'
-								>
-									<span className='visually-hidden'>
-										Loading...
-									</span>
-								</div>
-							) : (
-								'Signup'
-							)}
-						</button>
-					</div>
-				</form>
-			</div>
+		<div className='form-card'>
+			<h2 className='form-header'>Signup</h2>
+
+			<form onSubmit={handleLoginSubmit} className=''>
+				<div className='mb-3'>
+					<input
+						type='text'
+						className='input'
+						id='firstName'
+						placeholder='First Name'
+						onChange={(e) => handleChange(e)}
+						required
+					/>
+				</div>
+				<div className='mb-3'>
+					<input
+						type='email'
+						className='input'
+						id='email'
+						placeholder='Your Email'
+						value={state.email}
+						disabled
+					/>
+				</div>
+				<div className='mb-3'>
+					<input
+						type='text'
+						className='input'
+						id='referredCodeKey'
+						placeholder='Referrence Code'
+						onChange={(e) => handleChange(e)}
+					/>
+				</div>
+				<div className='form-check'>
+					<input
+						className='form-check-input'
+						value={payload.agreeToPrivacyPolicy}
+						id='agreeToPrivacyPolicy'
+						type='checkbox'
+						required
+						onChange={(e) => {
+							setPayload({
+								...payload,
+								agreeToPrivacyPolicy: e.target.checked,
+							});
+						}}
+					/>
+					<label
+						className='form-check-label'
+						htmlFor='agreeToPrivacyPolicy'
+					>
+						<p>I agree to the privacy policy.</p>
+					</label>
+				</div>
+				<p className='mt-1 text-danger'>{error}</p>
+				<div className='d-flex justify-content-end'>
+					<PrimaryButton loading={loading}>Signup</PrimaryButton>
+				</div>
+			</form>
 		</div>
 	);
 };

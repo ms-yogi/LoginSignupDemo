@@ -23,6 +23,10 @@ export const getReferralKey = () => {
 	return axios.get(`${API_URL}/users/referral/MAYANK`);
 };
 
-export const logout = (userid) => {
-	return axios.post(`${API_URL}/users/logout/${userid}`);
+export const logout = (userid, token) => {
+	return axios.delete(`${API_URL}/users/logout/${userid}`, {
+		headers: {
+			Authorization: `Bearer ${userid},${token}`,
+		},
+	});
 };

@@ -1,9 +1,9 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
 import Cookie from 'js-cookie';
-import logo from '../assets/basis-logo.png';
 import { verifyUser, resendCode } from '../utils/api';
 import { AppStateContext } from '../context/AppContext';
+import { PrimaryButton } from '../components/Button';
 
 const TokenVerification = (props) => {
 	const [state] = useContext(AppStateContext);
@@ -91,68 +91,36 @@ const TokenVerification = (props) => {
 	};
 
 	return (
-		<div className='wrapper d-flex justify-content-center align-items-center'>
-			<div className='card p-4'>
-				<h1>VERIFICATION</h1>
-				<img src={logo} alt='' />
-				<form onSubmit={handleVerification} className=''>
+		<div className='form-card d-flex justify-content-between'>
+			<div className='d-flex flex-column justify-content-center flex-grow-1'>
+				<h2 className='form-header'>Welcome to the Basis</h2>
+				<p className='mb-2 text-black-50'>
+					A verification code has been sent to your email.
+				</p>
+
+				<form onSubmit={handleVerification}>
 					<div className='mb-3'>
-						<label
-							htmlFor='verification-code'
-							className='form-label'
-						>
-							Verification Code
-						</label>
 						<input
 							type='number'
-							className='form-control'
+							className='input'
 							id='verification-code'
-							placeholder='Enter verification code'
+							placeholder='Verification Code'
 							onChange={(e) => {
 								setError('');
 								setCode(e.target.value);
 							}}
 						/>
-						<p className='mb-0 text-danger'>{error}</p>
-						<p className='mb-0 text-success'>{resendMessage}</p>
+						<p className='mt-1 text-danger'>{error}</p>
+						<p className='mb-1 text-success'>{resendMessage}</p>
 					</div>
-					<div>
-						<button className='btn btn-success' type='submit'>
-							{loading ? (
-								<div
-									className='spinner-border text-light'
-									role='status'
-								>
-									<span className='visually-hidden'>
-										Loading...
-									</span>
-								</div>
-							) : (
-								'Verify'
-							)}
-						</button>
+					<div className='d-flex justify-content-end'>
+						<PrimaryButton loading={loading}>Verify</PrimaryButton>
 					</div>
 				</form>
-				<div>
-					<button
-						className='btn text-success'
-						onClick={handleResendCode}
-					>
-						{loading ? (
-							<div
-								className='spinner-border text-light'
-								role='status'
-							>
-								<span className='visually-hidden'>
-									Loading...
-								</span>
-							</div>
-						) : (
-							'Resend verification code'
-						)}
-					</button>
-				</div>
 			</div>
+			<button className='btn text-success' onClick={handleResendCode}>
+				Resend verification code
+			</button>
 		</div>
 	);
 };
