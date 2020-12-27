@@ -1,16 +1,31 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
 import Cookie from 'js-cookie';
 import logo from '../assets/basis-logo.png';
-import { signup } from '../utils/api';
+import { signup, getReferralKey } from '../utils/api';
 import { AppStateContext } from '../context/AppContext';
 
 const Signup = () => {
 	let [state] = useContext(AppStateContext);
+
 	let history = useHistory();
 	const [payload, setPayload] = useState('');
 	const [error, setError] = useState('');
 	const [loading, setLoading] = useState(false);
+	const [referralToken, setReferralToken] = useState('');
+
+	useEffect(() => {
+		if (!state.email) {
+			history.push('/users');
+		}
+
+		getReferralKey().then((payload) => {
+			let response = payload.data;
+			if (response.success) {
+				setReferralToken(response.results.referralToken);
+			}
+		});
+	}, []);
 
 	const handleChange = (e) => {
 		setError('');
@@ -23,29 +38,35 @@ const Signup = () => {
 	const handleLoginSubmit = (e) => {
 		e.preventDefault();
 
-		let data = {
-			firstName: payload.firstName,
-			email: state.email,
-			referredCodeKey: payload.referredCodeKey,
-			agreeToPrivacyPolicy: payload.agreeToPrivacyPolicy,
-			token: Cookie.get('token'),
-			source: window.SOURCE,
-		};
+		if (
+			payload.referredCodeKey === referralToken ||
+			!payload.referredCodeKey.length
+		) {
+			let data = {
+				firstName: payload.firstName,
+				email: state.email,
+				referredCodeKey: payload.referredCodeKey,
+				agreeToPrivacyPolicy: payload.agreeToPrivacyPolicy,
+				token: Cookie.get('token'),
+				source: window.SOURCE,
+			};
 
-		setLoading(true);
-		signup(data).then((payload) => {
-			let response = payload.data;
-			console.log(response);
-			setLoading(false);
-			if (response.success) {
-				history.push({
-					pathname: '/profile',
-					state: { userData: response.results.user },
-				});
-			} else {
-				setError(response.message);
-			}
-		});
+			setLoading(true);
+			signup(data).then((payload) => {
+				let response = payload.data;
+				setLoading(false);
+				if (response.success) {
+					history.push({
+						pathname: '/profile',
+						state: { userData: response.results.user },
+					});
+				} else {
+					setError(response.message);
+				}
+			});
+		} else {
+			setError('Referred code seems to be invalid!');
+		}
 	};
 
 	return (
@@ -64,6 +85,7 @@ const Signup = () => {
 							id='firstName'
 							placeholder='First Name'
 							onChange={(e) => handleChange(e)}
+							required
 						/>
 					</div>
 					<div className='mb-3'>
@@ -75,8 +97,8 @@ const Signup = () => {
 							className='form-control'
 							id='email'
 							placeholder='Enter your email'
-							onChange={(e) => handleChange(e)}
 							value={state.email}
+							disabled
 						/>
 					</div>
 					<div className='mb-3'>
@@ -97,6 +119,7 @@ const Signup = () => {
 							value={payload.agreeToPrivacyPolicy}
 							id='agreeToPrivacyPolicy'
 							type='checkbox'
+							required
 							onChange={(e) => {
 								setPayload({
 									...payload,
@@ -111,7 +134,7 @@ const Signup = () => {
 							I agree to the privacy policy.
 						</label>
 					</div>
-					<p className='mb-0 text-error'>{error}</p>
+					<p className='mb-0 text-danger'>{error}</p>
 					<div>
 						<button className='btn btn-success' type='submit'>
 							{loading ? (

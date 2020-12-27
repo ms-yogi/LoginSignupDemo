@@ -12,30 +12,42 @@ const Users = () => {
 	const [email, setEmail] = useState('');
 	const [error, setError] = useState('');
 	const [loading, setLoading] = useState(false);
+
+	const isValidEmail = (email) => {
+		const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+		return re.test(String(email).toLowerCase());
+	};
+
 	const handleLoginSubmit = (e) => {
 		e.preventDefault();
-
-		if (email.length) {
+		if (email.length && isValidEmail(email)) {
 			setLoading(true);
-			addUsers({ email }).then((payload) => {
-				let response = payload.data;
-				if (response.success) {
-					setState((state) => ({
-						...state,
-						email: email,
-					}));
-					Cookie.set('token', response.results.token);
+			addUsers({ email })
+				.then((payload) => {
+					let response = payload.data;
+					if (response.success) {
+						setState((state) => ({
+							...state,
+							email: email,
+						}));
+						Cookie.set('token', response.results.token);
+						setLoading(false);
+						history.push({
+							pathname: '/verification',
+							state: { isLogin: response.results.isLogin },
+						});
+					}
+					if (!response.success) {
+						setError(response.message);
+						setLoading(false);
+					}
+				})
+				.catch((error) => {
 					setLoading(false);
-					history.push({
-						pathname: '/verification',
-						state: { isLogin: response.results.isLogin },
-					});
-				}
-				if (!response.success) {
-					setError(response.message);
-					setLoading(false);
-				}
-			});
+					setError(error.response.data.message);
+				});
+		} else {
+			setError('Please enter a valid email');
 		}
 	};
 
@@ -54,9 +66,12 @@ const Users = () => {
 							className='form-control'
 							id='email'
 							placeholder='Enter your email'
-							onChange={(e) => setEmail(e.target.value)}
+							onChange={(e) => {
+								setError('');
+								setEmail(e.target.value);
+							}}
 						/>
-						<p className='mb-0 text-error'>{error}</p>
+						<p className='mb-0 text-danger'>{error}</p>
 					</div>
 					<div>
 						<button className='btn btn-success' type='submit'>
@@ -70,7 +85,7 @@ const Users = () => {
 									</span>
 								</div>
 							) : (
-								'Login/Signup'
+								'Send OTP'
 							)}
 						</button>
 					</div>

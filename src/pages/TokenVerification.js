@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
 import Cookie from 'js-cookie';
 import logo from '../assets/basis-logo.png';
@@ -17,11 +17,21 @@ const TokenVerification = (props) => {
 	const [error, setError] = useState('');
 	const [loading, setLoading] = useState(false);
 	const [resendMessage, setResendMessage] = useState('');
+	const [resendCounter, setResendCounter] = useState(0);
+	const [wrongTokenCounter, setWrongTokenCounter] = useState(0);
+
+	useEffect(() => {
+		if (!email) {
+			history.push('/users');
+		}
+	}, []);
 
 	const handleVerification = (e) => {
 		e.preventDefault();
 
-		if (code.length) {
+		if (wrongTokenCounter >= 3) {
+			history.push('/users');
+		} else if (code.length >= 6) {
 			setLoading(true);
 			let data = {
 				email: email,
@@ -29,39 +39,55 @@ const TokenVerification = (props) => {
 				verificationCode: code,
 			};
 
-			verifyUser(data).then((payload) => {
-				let response = payload.data;
-				if (response.success) {
+			verifyUser(data)
+				.then((payload) => {
+					let response = payload.data;
 					setLoading(false);
-					console.log('FORM TOKEN:', response.user);
-					if (isLogin) {
-						history.push({
-							pathname: '/profile',
-							state: { userData: response.results.user },
-						});
+					if (response.success) {
+						if (isLogin) {
+							history.push({
+								pathname: '/profile',
+								state: { userData: response.results.user },
+							});
+						} else {
+							history.push('/signup');
+						}
 					} else {
-						history.push('/signup');
+						setError(response.message);
+						setWrongTokenCounter((counter) => counter + 1);
 					}
-				} else {
-					setError(response.message);
-				}
-			});
+				})
+				.catch((error) => {
+					setLoading(false);
+					setError(error.response.data.message);
+				});
+		} else {
+			setError('Verification code must be 6 digits long!');
 		}
 	};
 
 	const handleResendCode = () => {
-		let data = {
-			email,
-			token: Cookie.get('token'),
-		};
+		setResendCounter((counter) => counter + 1);
+		if (resendCounter >= 3) {
+			history.push('/users');
+		} else {
+			let data = {
+				email,
+				token: Cookie.get('token'),
+			};
 
-		resendCode(data).then((response) => {
-			if (response.success) {
-				setResendMessage(response.message);
-			} else {
-				setError(response.message);
-			}
-		});
+			resendCode(data)
+				.then((response) => {
+					if (response.success) {
+						setResendMessage(response.message);
+					} else {
+						setError(response.message);
+					}
+				})
+				.catch((error) => {
+					setError(error.response.data.message);
+				});
+		}
 	};
 
 	return (
@@ -78,13 +104,16 @@ const TokenVerification = (props) => {
 							Verification Code
 						</label>
 						<input
-							type='text'
+							type='number'
 							className='form-control'
 							id='verification-code'
 							placeholder='Enter verification code'
-							onChange={(e) => setCode(e.target.value)}
+							onChange={(e) => {
+								setError('');
+								setCode(e.target.value);
+							}}
 						/>
-						<p className='mb-0 text-error'>{error}</p>
+						<p className='mb-0 text-danger'>{error}</p>
 						<p className='mb-0 text-success'>{resendMessage}</p>
 					</div>
 					<div>
@@ -103,26 +132,26 @@ const TokenVerification = (props) => {
 							)}
 						</button>
 					</div>
-					<div>
-						<button
-							className='btn text-success'
-							onClick={handleResendCode}
-						>
-							{loading ? (
-								<div
-									className='spinner-border text-light'
-									role='status'
-								>
-									<span className='visually-hidden'>
-										Loading...
-									</span>
-								</div>
-							) : (
-								'Resend verification code'
-							)}
-						</button>
-					</div>
 				</form>
+				<div>
+					<button
+						className='btn text-success'
+						onClick={handleResendCode}
+					>
+						{loading ? (
+							<div
+								className='spinner-border text-light'
+								role='status'
+							>
+								<span className='visually-hidden'>
+									Loading...
+								</span>
+							</div>
+						) : (
+							'Resend verification code'
+						)}
+					</button>
+				</div>
 			</div>
 		</div>
 	);

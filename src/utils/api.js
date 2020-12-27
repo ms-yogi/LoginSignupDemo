@@ -19,6 +19,10 @@ export const signup = (payload) => {
 	return axios.post(`${API_URL}/users`, payload);
 };
 
+export const getReferralKey = () => {
+	return axios.get(`${API_URL}/users/referral/MAYANK`);
+};
+
 export const logout = (userid) => {
 	return axios.post(`${API_URL}/users/logout/${userid}`);
 };
